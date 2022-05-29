@@ -11,7 +11,7 @@
         android:id="@+id/home_iv_ava"
         android:layout_width="240dp"
         android:layout_height="240dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="30dp"
         android:src="@drawable/img_ava"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -36,11 +36,29 @@
         app:layout_constraintTop_toBottomOf="@+id/home_iv_ava" />
 
     <TextView
+        android:id="@+id/home_btn_contacts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/home_btn_border"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:minWidth="160dp"
+        android:padding="8dp"
+        android:text="Contacts"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/home_tv_name" />
+
+    <TextView
         android:id="@+id/home_btn_chat_friend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/home_btn_border"
         android:gravity="center"
         android:includeFontPadding="false"
@@ -51,7 +69,7 @@
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_tv_name" />
+        app:layout_constraintTop_toBottomOf="@+id/home_btn_contacts" />
 
     <TextView
         android:id="@+id/home_btn_chat_group"

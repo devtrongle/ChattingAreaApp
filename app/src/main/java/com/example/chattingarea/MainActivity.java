@@ -10,6 +10,7 @@ import android.util.Log;
 import com.example.chattingarea.model.UserDto;
 import com.example.chattingarea.ui.ChatGroup_Screen;
 import com.example.chattingarea.ui.ChatOverviewScreen;
+import com.example.chattingarea.ui.ContactsFragment;
 import com.example.chattingarea.ui.HomeScreen;
 import com.example.chattingarea.ui.LoginScreen;
 import com.example.chattingarea.ui.ProfileScreen;
@@ -97,6 +98,14 @@ public class MainActivity extends AppCompatActivity {
                 .setReorderingAllowed(true)
                 .add(R.id.home_container, ChatOverviewScreen.class, null)
                 .addToBackStack(ChatOverviewScreen.class.getSimpleName())
+                .commitAllowingStateLoss();
+    }
+
+    public void openContactsScreen() {
+        getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
+                .add(R.id.home_container, ContactsFragment.class, null)
+                .addToBackStack(ContactsFragment.class.getSimpleName())
                 .commitAllowingStateLoss();
     }
 

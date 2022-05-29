@@ -17,6 +17,7 @@ public class HomeScreen extends Fragment {
     private TextView tvChatGroup;
     private TextView tvProfile;
     private TextView tvSignOut;
+    private TextView tvContracts;
     private View mRootView;
 
     public HomeScreen() {
@@ -48,6 +49,7 @@ public class HomeScreen extends Fragment {
         tvChatGroup = mRootView.findViewById(R.id.home_btn_chat_group);
         tvSignOut = mRootView.findViewById(R.id.home_btn_sign_out);
         tvProfile = mRootView.findViewById(R.id.home_btn_profile);
+        tvContracts = mRootView.findViewById(R.id.home_btn_contacts);
     }
 
     private void initAction() {
@@ -56,6 +58,7 @@ public class HomeScreen extends Fragment {
         tvProfile.setOnClickListener(view -> ((MainActivity) getActivity()).openProfileScreen());
 
         tvChatFriend.setOnClickListener(view -> ((MainActivity) getActivity()).openChatScreen());
+        tvContracts.setOnClickListener(view -> ((MainActivity) getActivity()).openContactsScreen());
 
         tvChatGroup.setOnClickListener(view -> ((MainActivity) getActivity()).openChatGroup());
     }
