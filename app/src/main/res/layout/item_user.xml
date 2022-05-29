@@ -1,0 +1,44 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_group_overview_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/primary_orange_light"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="12dp">
+
+    <com.github.siyamed.shapeimageview.CircularImageView
+        android:id="@+id/avatar_img"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/img"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:siBorderColor="@color/primary_orange_light"
+        app:siBorderWidth="1dp" />
+
+    <TextView
+        android:id="@+id/nam_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:includeFontPadding="false"
+        android:text="John Smith"
+        android:textColor="@color/black"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/avatar_img"
+        app:layout_constraintStart_toEndOf="@+id/avatar_img"
+        app:layout_constraintTop_toTopOf="@+id/avatar_img" />
+
+    <ImageView
+        android:id="@+id/add_user_btn"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_plus_primary_orange"
+        app:layout_constraintBottom_toBottomOf="@+id/avatar_img"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/nam_tv"
+        app:layout_constraintTop_toTopOf="@+id/avatar_img" />
+</androidx.constraintlayout.widget.ConstraintLayout>

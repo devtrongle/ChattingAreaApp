@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Github/Chat-master/Chat-master/app/src/main/res/layout/item_chat_left.xml" value="0.3546875" />
+        <entry key="..\:/Github/Chat-master/Chat-master/app/src/main/res/layout/item_chat_right.xml" value="0.3546875" />
+        <entry key="..\:/Users/Admin/Desktop/2/ChattingAreaApp-main/ChattingAreaApp-main/app/src/main/res/layout/activity_main.xml" value="0.1762917933130699" />
+        <entry key="..\:/Users/Admin/Desktop/2/ChattingAreaApp-main/ChattingAreaApp-main/app/src/main/res/layout/fragment_add_people_chat_group_screen.xml" value="0.3625" />
+        <entry key="..\:/Users/Admin/Desktop/2/ChattingAreaApp-main/ChattingAreaApp-main/app/src/main/res/layout/fragment_chat_detail_screen.xml" value="0.1762917933130699" />
+        <entry key="..\:/Users/Admin/Desktop/2/ChattingAreaApp-main/ChattingAreaApp-main/app/src/main/res/layout/fragment_chat_gruop_screen.xml" value="0.3625" />
+        <entry key="..\:/Users/Admin/Desktop/2/ChattingAreaApp-main/ChattingAreaApp-main/app/src/main/res/layout/fragment_home_screen.xml" value="0.1762917933130699" />
+        <entry key="app/src/main/res/drawable/btn_border.xml" value="0.2135" />
+        <entry key="app/src/main/res/drawable/ic_plus.xml" value="0.3125" />
+        <entry key="app/src/main/res/drawable/iv_border.xml" value="0.2135" />
+        <entry key="app/src/main/res/layout/activity_login_screen.xml" value="0.39166666666666666" />
+        <entry key="app/src/main/res/layout/activity_sign_up_screen.xml" value="0.39166666666666666" />
+        <entry key="app/src/main/res/layout/fragment_add_people_chat_group_screen.xml" value="0.34363411619283063" />
+        <entry key="app/src/main/res/layout/fragment_chat_detail_screen.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/fragment_chat_gruop_screen.xml" value="0.39166666666666666" />
+        <entry key="app/src/main/res/layout/fragment_chat_overview_screen.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/fragment_home_screen.xml" value="0.39166666666666666" />
+        <entry key="app/src/main/res/layout/item_chat_group_overview.xml" value="0.39166666666666666" />
+        <entry key="app/src/main/res/layout/item_chat_left.xml" value="0.20625" />
+        <entry key="app/src/main/res/layout/item_chat_overview.xml" value="0.39166666666666666" />
+        <entry key="app/src/main/res/layout/item_chat_right.xml" value="0.20625" />
+        <entry key="app/src/main/res/layout/item_user.xml" value="0.39166666666666666" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK" />
+</project>

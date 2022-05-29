@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1053354496773",
+    "firebase_url": "https://message-c8f5b-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "message-c8f5b",
+    "storage_bucket": "message-c8f5b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1053354496773:android:0ff8b732fd426df97f9d6c",
+        "android_client_info": {
+          "package_name": "com.example.chattingarea"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1053354496773-7sbvhh0d32fsa1gjsea0gheebogbqobr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chattingarea",
+            "certificate_hash": "9805378503849b4eff7adb1c2b524b85611a24a1"
+          }
+        },
+        {
+          "client_id": "1053354496773-g3ka1h5dkapoafkk51n223n239g9kh2f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCG3Ghr738OFcBKiNQg4GCQFVYKWN5mEjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1053354496773-g3ka1h5dkapoafkk51n223n239g9kh2f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
