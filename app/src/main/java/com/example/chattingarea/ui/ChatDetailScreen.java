@@ -1,15 +1,27 @@
 package com.example.chattingarea.ui;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.MODE_PRIVATE;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.RemoteInput;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,20 +37,26 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.chattingarea.Constant;
+import com.example.chattingarea.MainActivity;
 import com.example.chattingarea.R;
 import com.example.chattingarea.Utils;
 import com.example.chattingarea.adapter.FriendChatAdapter;
 import com.example.chattingarea.model.GroupDto;
 import com.example.chattingarea.model.MessageDetailDto;
 import com.example.chattingarea.model.UserDto;
+import com.example.chattingarea.service.MessageService;
+import com.example.chattingarea.service.NotificationBroadcast;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.RemoteMessage;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,11 +64,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+
+import timber.log.Timber;
 
 public class ChatDetailScreen extends Fragment {
 
+    public static int REQUEST_ID = 1;
+
     private static final String ARG_PARAM1 = "param1";
     private static final int OPEN_DOCUMENT_CODE = 22;
+    public static final String KEY_TEXT_REPLY = "key_text_reply";
     private String uIdOther;
     private FirebaseDatabase mDatabase;
     private DatabaseReference mUserRef;
@@ -98,6 +123,7 @@ public class ChatDetailScreen extends Fragment {
         initData();
         return mRootView;
     }
+
 
     private void initView() {
         mDatabase = FirebaseDatabase.getInstance();
@@ -204,7 +230,8 @@ public class ChatDetailScreen extends Fragment {
         mRoomRef.child(mFirebaseAuth.getUid()).child(uIdOther).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Log.d("getHistoryMess", "ok: " + snapshot);
+//                Log.d("getHistoryMess", "ok: " + snapshot);
+
                 ArrayList<MessageDetailDto> list = new ArrayList<>();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     MessageDetailDto mess = ds.getValue(MessageDetailDto.class);

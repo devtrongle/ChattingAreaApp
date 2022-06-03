@@ -134,6 +134,11 @@ public class LoginScreen extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         openMainActivity();
+                        task.getResult();
+                        getSharedPreferences("_", MODE_PRIVATE).edit().putString(
+                                "uID",
+                                task.getResult().getUser().getUid()).apply();
+
                     } else {
                         Toast.makeText(LoginScreen.this, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show();
