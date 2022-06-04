@@ -235,11 +235,6 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
             mMyFriendAdapter.submitList(mListFriend);
         }
 
-        Log.d("CheckApp", "mListAllContact: " + mListAllContact.size());
-        Log.d("CheckApp", "mListMyRequestFriend: " + mListMyRequestFriend.size());
-        Log.d("CheckApp", "mListRequestFriend: " + mListRequestFriend.size());
-        Log.d("CheckApp", "mListAllUser: " + mListAllUser.size());
-
         setupMyRequestFriend();
         setupRequestFriend();
     }
@@ -259,7 +254,8 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
             @Override
             public void onCancelClick(UserDto userDto, Contact contact, int position) {
                 contact.setStatus(Constant.StatusContacts.DENY);
-                mRealtimeDatabaseUtils.updateContact(contact);
+                mRealtimeDatabaseUtils.deleteContact(contact);
+                mMyRequestAdapter.removeItem(position);
                 Toast.makeText(requireContext(), "Đã hủy lời mời!", Toast.LENGTH_SHORT).show();
             }
         });

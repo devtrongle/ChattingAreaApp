@@ -89,13 +89,18 @@ public class RealtimeDatabaseUtils {
     public void getAllContacts(@NonNull IGetAllContacts callback) {
         mContactsRef.get().addOnSuccessListener(dataSnapshot -> {
             List<Contact> allContacts = new ArrayList<>();
+            List<Contact> t = new ArrayList<>();
 
             for (DataSnapshot d : dataSnapshot.getChildren()) {
                 Contact contact = d.getValue(Contact.class);
+                t.add(contact);
                 if(Contact.isMyContact(mUId,contact, allContacts)){
                     allContacts.add(contact);
                 }
             }
+
+            Log.d(TAG, "Contacts: " + t.size());
+            Log.d(TAG, "Contacts all: " + allContacts.size());
 
             callback.onCompletedGetAllContacts(
                     allContacts.size() == 0 ? Constant.StatusRequest.NO_DATA
