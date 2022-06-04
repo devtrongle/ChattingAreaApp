@@ -18,13 +18,13 @@ import com.example.chattingarea.model.UserDto;
 import java.util.Date;
 import java.util.List;
 
-public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class MyRequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Contact> listContacts;
     private List<UserDto> listUsers;
     private ClickListener mClickListener;
     private Context context;
 
-    public RequestAdapter(Context context, List<Contact> listContacts,
+    public MyRequestAdapter(Context context, List<Contact> listContacts,
             List<UserDto> listUsers,
             ClickListener clickListener) {
         this.context = context;
@@ -33,10 +33,16 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.mClickListener = clickListener;
     }
 
+    public void setDataSource(List<Contact> listContacts, List<UserDto> listUsers){
+        this.listContacts = listContacts;
+        this.listUsers = listUsers;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_request_friend, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_my_request_friend, parent, false);
         return new UserViewHolder(view);
     }
 
@@ -45,12 +51,6 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             if (u.getId().equals(uid)) return u;
         }
         return null;
-    }
-
-    public void setDataSource(List<Contact> listContacts, List<UserDto> listUsers){
-        this.listContacts = listContacts;
-        this.listUsers = listUsers;
-        notifyDataSetChanged();
     }
 
     public void removeItem(int position){
@@ -62,19 +62,12 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof UserViewHolder) {
             UserDto userDto = getUserByUId(listContacts.get(position).getAuth());
-            ((UserViewHolder) holder).tvName.setText(userDto.getName() + " đã gửi lời mời kết bạn!");
-            ((UserViewHolder) holder).tvTime.setText(
-                    TimeUtils.getTimeAgo(new Date(listContacts.get(position).getTime())));
+            ((UserViewHolder) holder).tvName.setText("Bạn đã gửi lời mời kết bạn đến " + userDto.getName());
+            ((UserViewHolder) holder).tvTime.setText(TimeUtils.getTimeAgo(new Date(listContacts.get(position).getTime())));
 
-            ((UserViewHolder) holder).btnAccept.setOnClickListener(view -> {
+            ((UserViewHolder) holder).btnCancel.setOnClickListener(view -> {
                 if(mClickListener != null){
-                    mClickListener.onAcceptClick(userDto, listContacts.get(position), position);
-                }
-            });
-
-            ((UserViewHolder) holder).btnDeny.setOnClickListener(view -> {
-                if(mClickListener != null){
-                    mClickListener.onDenyClick(userDto, listContacts.get(position), position);
+                    mClickListener.onCancelClick(userDto, listContacts.get(position), position);
                 }
             });
         }
@@ -89,21 +82,18 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     static class UserViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         TextView tvTime;
-        Button btnAccept;
-        Button btnDeny;
+        Button btnCancel;
 
         public UserViewHolder(View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
             tvTime = itemView.findViewById(R.id.tvTime);
-            btnDeny = itemView.findViewById(R.id.cancel_button);
-            btnAccept = itemView.findViewById(R.id.accept_button);
+            btnCancel = itemView.findViewById(R.id.cancel_button);
         }
     }
 
     public interface ClickListener {
-        void onAcceptClick(UserDto userDto, Contact contact, int position);
-        void onDenyClick(UserDto userDto, Contact contact, int position);
+        void onCancelClick(UserDto userDto, Contact contact, int position);
     }
 
 }

@@ -19,6 +19,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +39,7 @@ public class RealtimeDatabaseUtils {
     private final FirebaseAuth mFirebaseAuth;
     private final String mUId;
 
-    private ChildEventListener mListenContact;
+    private ValueEventListener mListenContact;
 
     @SuppressLint("StaticFieldLeak")
     public static RealtimeDatabaseUtils sInstance = null;
@@ -88,9 +89,10 @@ public class RealtimeDatabaseUtils {
     public void getAllContacts(@NonNull IGetAllContacts callback) {
         mContactsRef.get().addOnSuccessListener(dataSnapshot -> {
             List<Contact> allContacts = new ArrayList<>();
+
             for (DataSnapshot d : dataSnapshot.getChildren()) {
                 Contact contact = d.getValue(Contact.class);
-                if(Contact.isMyContact(mUId,contact)){
+                if(Contact.isMyContact(mUId,contact, allContacts)){
                     allContacts.add(contact);
                 }
             }
@@ -105,7 +107,16 @@ public class RealtimeDatabaseUtils {
     }
 
     public void sendRequestContact(@NonNull String uidToSend, ISendRequestContact callback) {
-        mContactsRef.child(mUId).setValue(Contact.createRequest(mUId, uidToSend))
+        String id = mContactsRef.push().getKey();
+        if(id == null) {
+            Timber.e("ID null");
+            if (callback != null) {
+                callback.onCompletedSendRequestContact(
+                        Constant.StatusRequest.FAIL, "ID null");
+            }
+            return;
+        }
+        mContactsRef.child(id).setValue(Contact.createRequest(id,mUId, uidToSend))
                 .addOnSuccessListener(unused -> {
                     if (callback != null) {
                         callback.onCompletedSendRequestContact(
@@ -129,40 +140,12 @@ public class RealtimeDatabaseUtils {
         mContactsRef.child(contact.getAuth()).removeValue();
     }
 
-    public void listenMyContact(@NonNull IListenMyContact callback){
-        mListenContact = mContactsRef.child(mUId).addChildEventListener(new ChildEventListener() {
+
+    public void listenContact(@NonNull IListenMyContact callback){
+        mListenContact = mContactsRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot,
-                    @Nullable String previousChildName) {
-                Contact contact = snapshot.getValue(Contact.class);
-                if(Contact.isMyContact(mUId,contact)){
-                    callback.onNewRequest(contact,"New request");
-                }
-
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot,
-                    @Nullable String previousChildName) {
-                Contact contact = snapshot.getValue(Contact.class);
-                if(Contact.isMyContact(mUId,contact)){
-                    callback.onChangeRequest(contact,"Contact change");
-                }
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                Contact contact = snapshot.getValue(Contact.class);
-                if(Contact.isMyContact(mUId,contact)){
-                    callback.onDeletedRequest(contact,"Request deleted");
-                }
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot,
-                    @Nullable String previousChildName) {
-
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                callback.onDataChange();
             }
 
             @Override
@@ -172,7 +155,7 @@ public class RealtimeDatabaseUtils {
         });
     }
 
-    public void removeListenMyContact(){
+    public void removeListenContact(){
         if(mListenContact != null){
             mContactsRef.removeEventListener(mListenContact);
             mListenContact = null;
@@ -192,9 +175,7 @@ public class RealtimeDatabaseUtils {
     }
 
     public interface IListenMyContact{
-        void onNewRequest(Contact contact, String message);
-        void onDeletedRequest(Contact contact, String message);
-        void onChangeRequest(Contact contact, String message);
+        void onDataChange();
     }
 
     public interface IGetAllUser {

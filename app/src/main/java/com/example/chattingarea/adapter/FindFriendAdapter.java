@@ -41,11 +41,21 @@ public class FindFriendAdapter extends
         }
     };
 
+    private ClickListener mClickListener;
+
     private final boolean isFindFriend;
+
+    public void setOnClickListener(ClickListener listener){
+        this.mClickListener = listener;
+    }
 
     public FindFriendAdapter(boolean isFindFriend) {
         super(diffCallback);
         this.isFindFriend = isFindFriend;
+    }
+
+    public interface ClickListener {
+        void onSendRequestClick(UserDto userDto, int position);
     }
 
     @NonNull
@@ -85,20 +95,9 @@ public class FindFriendAdapter extends
             btnSendRequest.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    RealtimeDatabaseUtils.getInstance(view.getContext()).sendRequestContact(
-                            userDto.getId(), new RealtimeDatabaseUtils.ISendRequestContact() {
-                                @Override
-                                public void onCompletedSendRequestContact(
-                                        Constant.StatusRequest statusRequest, String message) {
-                                    if(statusRequest == Constant.StatusRequest.SUCCESS){
-                                        Toast.makeText(view.getContext(), "Gửi kết bạn thành công!",
-                                                Toast.LENGTH_SHORT).show();
-                                    }else{
-                                        Toast.makeText(view.getContext(), "Gửi kết bạn thất bại!",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
+                    if(mClickListener != null){
+                        mClickListener.onSendRequestClick(userDto,getAdapterPosition());
+                    }
                 }
             });
 
