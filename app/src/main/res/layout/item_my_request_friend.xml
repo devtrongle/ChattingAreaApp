@@ -8,37 +8,25 @@
     android:layout_height="wrap_content">
 
     <Button
-        android:background="#00000000"
-        android:textColor="#2196F3"
-        android:textAllCaps="false"
-        android:id="@+id/accept_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Chấp nhận"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/cancel_button"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:background="#00000000"
-        android:textColor="#FF1100"
-        android:textAllCaps="false"
         android:id="@+id/cancel_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Từ chối"
+        android:background="#00000000"
+        android:text="Hủy lời mời"
+        android:textAllCaps="false"
+        android:textColor="#FF1100"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/accept_button" />
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTime" />
 
     <TextView
         android:id="@+id/tvName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="A đã gửi lời mời kết bạn!"
+        android:text="Bạn đã gửi lời mời kết bạn cho !"
         android:textSize="15sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/tvTime"
@@ -48,15 +36,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:textSize="13sp"
         android:id="@+id/tvTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:text="30 phút trước"
-        app:layout_constraintBottom_toTopOf="@+id/accept_button"
+        android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.01"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="38dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,8 +5,11 @@ import android.content.Context;
 import com.example.chattingarea.Constant;
 
 import java.util.Date;
+import java.util.List;
 
 public class Contact {
+
+    private String id;
     private String auth;
     private String destination;
     private String status;
@@ -16,22 +19,29 @@ public class Contact {
     public Contact() {
     }
 
-    public static Contact createRequest(String auth, String destination){
-        return new Contact(auth, destination, Constant.StatusContacts.REQUEST,new Date().getTime());
+    public static Contact createRequest(String id,String auth, String destination){
+        return new Contact(id, auth, destination, Constant.StatusContacts.REQUEST,new Date().getTime());
     }
 
-    public Contact(String auth, String destination, String status, long time) {
+    public Contact(String id, String auth, String destination, String status, long time) {
+        this.id = id;
         this.auth = auth;
         this.destination = destination;
         this.status = status;
         this.time = time;
     }
 
-    public static boolean isMyContact(String myUId, Contact contact) {
+    public static boolean isMyContact(String myUId, Contact contact, List<Contact> listContacts) {
         if(contact == null) return false;
-        if(contact.getAuth().equals(myUId))
+        if(contact.getAuth().equals(myUId) || contact.getDestination().equals(myUId)){
+            for(Contact c : listContacts){
+                if( c.getAuth().equals(contact.getAuth()) && contact.getDestination().equals(c.getDestination())){
+                    return false;
+                }
+            }
             return true;
-        return contact.getDestination().equals(myUId);
+        }
+        return false;
     }
 
     public String getAuth() {
@@ -64,5 +74,13 @@ public class Contact {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
