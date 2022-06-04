@@ -88,7 +88,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ListView
+            <androidx.recyclerview.widget.RecyclerView
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:layout_marginTop="10dp"
                 android:id="@+id/list_name_filter"
                 android:layout_width="0dp"
@@ -113,7 +114,8 @@
                 app:layout_constraintTop_toBottomOf="@+id/list_name_filter" />
 
 
-            <ListView
+            <androidx.recyclerview.widget.RecyclerView
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:layout_marginTop="10dp"
                 android:id="@+id/list_friend"
                 android:layout_width="0dp"
@@ -149,7 +151,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView3" />
-
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
