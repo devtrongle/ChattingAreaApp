@@ -18,6 +18,7 @@ import android.widget.EditText;
 
 import com.example.chattingarea.Constant;
 import com.example.chattingarea.R;
+import com.example.chattingarea.RealtimeDatabaseUtils;
 import com.example.chattingarea.adapter.ChatOverviewAdapter;
 import com.example.chattingarea.model.Contact;
 import com.example.chattingarea.model.UserDto;
@@ -33,6 +34,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ChatOverviewScreen extends Fragment implements ChatOverviewAdapter.ClickListener {
@@ -165,28 +167,43 @@ public class ChatOverviewScreen extends Fragment implements ChatOverviewAdapter.
                     al.add(getUserFromDb(entry.getValue()));
                 }
 
-                for (UserDto x : al) {
-                    mContactRef.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            for (DataSnapshot dataSnapshot1 : snapshot.getChildren()) {
-                                Contact contact = dataSnapshot1.getValue(Contact.class);
-                                if (FirebaseAuth.getInstance().getUid().equals(contact.getAuth())) {
-                                    if (x.id.equals(contact.getDestination()) && contact.getStatus() == "friend") {
-                                        alHaveFriend.add(x);
-                                    }
+//                for (UserDto x : al) {
+//                    mContactRef.addValueEventListener(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                            for (DataSnapshot dataSnapshot1 : snapshot.getChildren()) {
+//                                Contact contact = dataSnapshot1.getValue(Contact.class);
+//                                if (FirebaseAuth.getInstance().getUid().equals(contact.getAuth())) {
+//                                    if (x.id.equals(contact.getDestination()) && contact.getStatus() == "friend") {
+//                                        alHaveFriend.add(x);
+//                                    }
+//                                }
+//                            }
+//                            dbInterface.readListUser(alHaveFriend);
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(@NonNull DatabaseError error) {
+//
+//                        }
+//                    });
+//                }
+                RealtimeDatabaseUtils.getInstance(requireContext()).getAllContacts(new RealtimeDatabaseUtils.IGetAllContacts() {
+                    @Override
+                    public void onCompletedGetAllContacts(Constant.StatusRequest statusRequest, List<Contact> allContacts, String myUid, String message) {
+                        for(Contact contact : allContacts){
+                            if(contact.getStatus().equals(Constant.StatusContacts.FRIEND)){
+                                if(myUid.equals(contact.getAuth())){
+                                    alHaveFriend.add(getUserByUId(contact.getDestination(),al));
+                                }else{
+                                    alHaveFriend.add(getUserByUId(contact.getAuth(),al));
                                 }
                             }
-                            dbInterface.readListUser(alHaveFriend);
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
 
                         }
-                    });
-                }
-
+                        dbInterface.readListUser(alHaveFriend);
+                    }
+                });
             }
 
             @Override
@@ -195,6 +212,15 @@ public class ChatOverviewScreen extends Fragment implements ChatOverviewAdapter.
             }
         });
     }
+
+    public UserDto getUserByUId(String uid, ArrayList<UserDto> al){
+        for (UserDto u :
+                al) {
+            if (u.getId().equals(uid)) return u;
+        }
+        return null;
+    }
+
 
     private UserDto getUserFromDb(HashMap value) {
         UserDto userDto = new UserDto();
