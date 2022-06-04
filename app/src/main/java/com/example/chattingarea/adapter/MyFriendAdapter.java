@@ -1,13 +1,11 @@
 package com.example.chattingarea.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -15,21 +13,15 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.chattingarea.Constant;
 import com.example.chattingarea.R;
-import com.example.chattingarea.RealtimeDatabaseUtils;
-import com.example.chattingarea.model.Contact;
 import com.example.chattingarea.model.UserDto;
-import com.google.firebase.auth.FirebaseAuth;
 
-
-import java.util.List;
 import java.util.Objects;
 
-public class FindFriendAdapter extends
-        ListAdapter<UserDto, FindFriendAdapter.FriendRequestViewHolder> {
+public class MyFriendAdapter extends
+        ListAdapter<UserDto, MyFriendAdapter.FriendRequestViewHolder> {
 
-    static DiffUtil.ItemCallback<UserDto> diffCallback = new DiffUtil.ItemCallback<UserDto>() {
+    static DiffUtil.ItemCallback<UserDto> diffCallbackMyFriend = new DiffUtil.ItemCallback<UserDto>() {
         @Override
         public boolean areItemsTheSame(@NonNull UserDto oldItem, @NonNull UserDto newItem) {
             return oldItem.getId().equals(newItem.getId());
@@ -43,13 +35,12 @@ public class FindFriendAdapter extends
 
     private ClickListener mClickListener;
 
-
     public void setOnClickListener(ClickListener listener){
         this.mClickListener = listener;
     }
 
-    public FindFriendAdapter() {
-        super(diffCallback);
+    public MyFriendAdapter() {
+        super(diffCallbackMyFriend);
     }
 
     public interface ClickListener {
@@ -59,7 +50,7 @@ public class FindFriendAdapter extends
     @NonNull
     @Override
     public FriendRequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new FriendRequestViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_find_friend, parent,false));
+        return new FriendRequestViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_my_friend, parent,false));
     }
 
     @Override
@@ -71,14 +62,12 @@ public class FindFriendAdapter extends
         private ImageView imvAvatar;
         private TextView tvName;
         private TextView tvPhone;
-        private Button btnSendRequest;
 
         public FriendRequestViewHolder(@NonNull View itemView) {
             super(itemView);
             imvAvatar = itemView.findViewById(R.id.avatar_image_view);
             tvName = itemView.findViewById(R.id.tvName);
             tvPhone = itemView.findViewById(R.id.tvPhone);
-            btnSendRequest = itemView.findViewById(R.id.send_request_button);
         }
 
         public void bind(UserDto userDto){
@@ -89,16 +78,6 @@ public class FindFriendAdapter extends
                     .load(userDto.getUrlAva())
                     .placeholder(R.drawable.img)
                     .into(imvAvatar);
-
-            btnSendRequest.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if(mClickListener != null){
-                        mClickListener.onSendRequestClick(userDto,getAdapterPosition());
-                    }
-                }
-            });
-
         }
     }
 }

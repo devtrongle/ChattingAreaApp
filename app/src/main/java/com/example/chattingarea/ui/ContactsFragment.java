@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import com.example.chattingarea.Constant;
 import com.example.chattingarea.R;
 import com.example.chattingarea.RealtimeDatabaseUtils;
 import com.example.chattingarea.adapter.FindFriendAdapter;
+import com.example.chattingarea.adapter.MyFriendAdapter;
 import com.example.chattingarea.adapter.MyRequestAdapter;
 import com.example.chattingarea.adapter.RequestAdapter;
 import com.example.chattingarea.model.Contact;
@@ -28,6 +30,8 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 
 public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.IGetAllUser, RealtimeDatabaseUtils.IGetAllContacts {
@@ -43,7 +47,7 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
     private RequestAdapter mRequestAdapter;
     private MyRequestAdapter mMyRequestAdapter;
     private FindFriendAdapter mFindFriendAdapter;
-    private FindFriendAdapter mMyFriendAdapter;
+    private MyFriendAdapter mMyFriendAdapter;
 
     private List<UserDto> mListFilter;
 
@@ -80,12 +84,12 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
         mListRequestFriend = new ArrayList<>();
         mListMyRequestFriend = new ArrayList<>();
         mRealtimeDatabaseUtils.getAllUser(this);
-        mRealtimeDatabaseUtils.getAllContacts(this);
+
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(),
                 DividerItemDecoration.VERTICAL);
 
-        mFindFriendAdapter = new FindFriendAdapter(true);
+        mFindFriendAdapter = new FindFriendAdapter();
         rvFilter.addItemDecoration(dividerItemDecoration);
         rvFilter.setAdapter(mFindFriendAdapter);
 
@@ -117,7 +121,7 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
             }
         });
 
-        mMyFriendAdapter = new FindFriendAdapter( false);
+        mMyFriendAdapter = new MyFriendAdapter();
         rvMyFriend.addItemDecoration(dividerItemDecoration);
         rvMyFriend.setAdapter(mMyFriendAdapter);
 
@@ -180,22 +184,18 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
     @Override
     public void onCompletedGetAllUser(Constant.StatusRequest statusRequest, List<UserDto> allUsers,
             String message) {
-        loadBaseData++;
+        mListAllUser = new ArrayList<>();
 
         if(statusRequest == Constant.StatusRequest.SUCCESS){
             mListAllUser = allUsers;
         }else if(statusRequest == Constant.StatusRequest.NO_DATA){
-            mListAllUser = new ArrayList<>();
             Toast.makeText(getContext(), "Chưa có người dùng", Toast.LENGTH_SHORT).show();
         }else{
             Toast.makeText(getContext(), "Lỗi server!", Toast.LENGTH_SHORT).show();
             requireActivity().onBackPressed();
         }
 
-        if(loadBaseData == 2){
-            setupRequestFriend();
-            setupMyRequestFriend();
-        }
+        mRealtimeDatabaseUtils.getAllContacts(this);
     }
 
     public UserDto getUserByUId(String uid){
@@ -209,33 +209,48 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
     @Override
     public void onCompletedGetAllContacts(Constant.StatusRequest statusRequest,
             List<Contact> allContacts,String myUid, String message) {
-        loadBaseData++;
+
         mListAllContact = allContacts;
         mListFriend = new ArrayList<>();
 
-        for(Contact contact : allContacts){
+        for(Contact contact : mListAllContact){
             if(contact.getStatus().equals(Constant.StatusContacts.FRIEND)){
                 if(myUid.equals(contact.getAuth())){
                     mListFriend.add(getUserByUId(contact.getDestination()));
                 }else{
                     mListFriend.add(getUserByUId(contact.getAuth()));
                 }
-            }else if(contact.getStatus().equals(Constant.StatusContacts.REQUEST)){
+            }
+
+            if(contact.getStatus().equals(Constant.StatusContacts.REQUEST)){
                 if(contact.getDestination().equals(myUid)){
-                    mListMyRequestFriend.add(contact);
+                    addContactToList(contact, mListRequestFriend);
                 }else{
-                    mListRequestFriend.add(contact);
+                    addContactToList(contact, mListMyRequestFriend);
                 }
             }
         }
+
         if(mListFriend.size() > 0){
             mMyFriendAdapter.submitList(mListFriend);
         }
 
-        if(loadBaseData == 2){
-            setupRequestFriend();
-            setupMyRequestFriend();
+        Log.d("CheckApp", "mListAllContact: " + mListAllContact.size());
+        Log.d("CheckApp", "mListMyRequestFriend: " + mListMyRequestFriend.size());
+        Log.d("CheckApp", "mListRequestFriend: " + mListRequestFriend.size());
+        Log.d("CheckApp", "mListAllUser: " + mListAllUser.size());
+
+        setupMyRequestFriend();
+        setupRequestFriend();
+    }
+
+    private void addContactToList(Contact contact, List<Contact> contactList){
+        for(Contact c : contactList){
+            if(c.getId().equals(contact.getId()))
+                return;
         }
+
+        contactList.add(contact);
     }
 
     private void setupMyRequestFriend(){
@@ -250,23 +265,6 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
         });
 
         rvMyRequest.setAdapter(mMyRequestAdapter);
-    }
-
-    private void refreshData(){
-        new Handler(Looper.getMainLooper())
-                .postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                loadBaseData = 0;
-                mRequestAdapter.setDataSource(new ArrayList<>(), new ArrayList<>());
-                mFindFriendAdapter.submitList(new ArrayList<>());
-                mMyFriendAdapter.submitList(new ArrayList<>());
-                mMyRequestAdapter.setDataSource(new ArrayList<>(), new ArrayList<>());
-
-                mRealtimeDatabaseUtils.getAllUser(ContactsFragment.this);
-                mRealtimeDatabaseUtils.getAllContacts(ContactsFragment.this);
-            }
-        },500);
     }
 
     private void setupRequestFriend(){
@@ -291,5 +289,15 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
                     }
                 });
         rvRequest.setAdapter(mRequestAdapter);
+    }
+
+    private void refreshData(){
+        new Handler(Looper.getMainLooper())
+                .postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRealtimeDatabaseUtils.getAllUser(ContactsFragment.this);
+                    }
+                },500);
     }
 }

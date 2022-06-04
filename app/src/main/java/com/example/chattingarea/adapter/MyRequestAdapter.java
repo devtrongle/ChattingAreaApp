@@ -15,10 +15,11 @@ import com.example.chattingarea.TimeUtils;
 import com.example.chattingarea.model.Contact;
 import com.example.chattingarea.model.UserDto;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class MyRequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class MyRequestAdapter extends RecyclerView.Adapter<MyRequestAdapter.MyRequestViewHolder> {
     private List<Contact> listContacts;
     private List<UserDto> listUsers;
     private ClickListener mClickListener;
@@ -33,17 +34,12 @@ public class MyRequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         this.mClickListener = clickListener;
     }
 
-    public void setDataSource(List<Contact> listContacts, List<UserDto> listUsers){
-        this.listContacts = listContacts;
-        this.listUsers = listUsers;
-        notifyDataSetChanged();
-    }
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MyRequestAdapter.MyRequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_my_request_friend, parent, false);
-        return new UserViewHolder(view);
+        return new MyRequestViewHolder(view);
     }
 
     private UserDto getUserByUId(String uid){
@@ -59,18 +55,16 @@ public class MyRequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof UserViewHolder) {
-            UserDto userDto = getUserByUId(listContacts.get(position).getAuth());
-            ((UserViewHolder) holder).tvName.setText("Bạn đã gửi lời mời kết bạn đến " + userDto.getName());
-            ((UserViewHolder) holder).tvTime.setText(TimeUtils.getTimeAgo(new Date(listContacts.get(position).getTime())));
+    public void onBindViewHolder(@NonNull MyRequestViewHolder holder, int position) {
+        UserDto userDto = getUserByUId(listContacts.get(position).getDestination());
+        holder.tvName.setText("Bạn đã gửi lời mời kết bạn đến " + userDto.getName());
+        holder.tvTime.setText(TimeUtils.getTimeAgo(new Date(listContacts.get(position).getTime())));
 
-            ((UserViewHolder) holder).btnCancel.setOnClickListener(view -> {
-                if(mClickListener != null){
-                    mClickListener.onCancelClick(userDto, listContacts.get(position), position);
-                }
-            });
-        }
+        holder.btnCancel.setOnClickListener(view -> {
+            if(mClickListener != null){
+                mClickListener.onCancelClick(userDto, listContacts.get(position), position);
+            }
+        });
     }
 
     @Override
@@ -79,12 +73,12 @@ public class MyRequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
 
-    static class UserViewHolder extends RecyclerView.ViewHolder {
+    class MyRequestViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         TextView tvTime;
         Button btnCancel;
 
-        public UserViewHolder(View itemView) {
+        public MyRequestViewHolder(View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
             tvTime = itemView.findViewById(R.id.tvTime);

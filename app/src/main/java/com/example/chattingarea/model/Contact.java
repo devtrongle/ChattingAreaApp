@@ -35,7 +35,8 @@ public class Contact {
         if(contact == null) return false;
         if(contact.getAuth().equals(myUId) || contact.getDestination().equals(myUId)){
             for(Contact c : listContacts){
-                if( c.getAuth().equals(contact.getAuth()) && contact.getDestination().equals(c.getDestination())){
+                if( c.getAuth().equals(contact.getAuth()) &&
+                        contact.getDestination().equals(c.getDestination())){
                     return false;
                 }
             }
