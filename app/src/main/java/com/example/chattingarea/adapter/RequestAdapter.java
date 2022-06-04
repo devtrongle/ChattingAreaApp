@@ -50,6 +50,11 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return null;
     }
 
+    public void removeItem(int position){
+        listContacts.remove(position);
+        notifyItemRemoved(position);
+    }
+
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof UserViewHolder) {
@@ -57,13 +62,13 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ((UserViewHolder) holder).tvName.setText(userDto.getName() + " đã gửi lời mời kết bạn!");
             ((UserViewHolder) holder).btnAccept.setOnClickListener(view -> {
                 if(mClickListener != null){
-                    mClickListener.onAcceptClick(userDto, listContacts.get(position));
+                    mClickListener.onAcceptClick(userDto, listContacts.get(position), position);
                 }
             });
 
             ((UserViewHolder) holder).btnDeny.setOnClickListener(view -> {
                 if(mClickListener != null){
-                    mClickListener.onDenyClick(userDto, listContacts.get(position));
+                    mClickListener.onDenyClick(userDto, listContacts.get(position), position);
                 }
             });
         }
@@ -91,8 +96,8 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     public interface ClickListener {
-        void onAcceptClick(UserDto userDto, Contact contact);
-        void onDenyClick(UserDto userDto, Contact contact);
+        void onAcceptClick(UserDto userDto, Contact contact, int position);
+        void onDenyClick(UserDto userDto, Contact contact, int position);
     }
 
 }
