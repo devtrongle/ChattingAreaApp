@@ -133,11 +133,11 @@ public class RealtimeDatabaseUtils {
     }
 
     public void updateContact(@NonNull Contact contact){
-        mContactsRef.child(contact.getAuth()).setValue(contact);
+        mContactsRef.child(contact.getId()).setValue(contact);
     }
 
     public void deleteContact(@NonNull Contact contact){
-        mContactsRef.child(contact.getAuth()).removeValue();
+        mContactsRef.child(contact.getId()).removeValue();
     }
 
 
