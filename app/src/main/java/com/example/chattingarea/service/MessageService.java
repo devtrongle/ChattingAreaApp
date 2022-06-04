@@ -158,15 +158,6 @@ public class MessageService extends Service {
         Log.d("Service", "service starting");
         Log.d("Service", "service starting"+ intent.getStringExtra(U_ID_CURRENT));
 
-        new Thread(){
-            @Override
-            public void run() {
-                for (int i =0 ;i <0; i++){
-                    Log.d("Service", "run: ");
-                }
-            }
-        }.start();
-
         sendNotification(intent.getStringExtra(U_ID_CURRENT));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

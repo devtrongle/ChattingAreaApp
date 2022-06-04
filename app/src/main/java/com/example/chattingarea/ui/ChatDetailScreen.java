@@ -26,6 +26,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -59,6 +60,9 @@ import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,9 +95,12 @@ public class ChatDetailScreen extends Fragment {
     private ImageView mBtnPick;
     private AppCompatImageView back;
     private TextView tvHeaderName;
+    private ImageView mBtnScreenShot;
 
     private FriendChatAdapter friendChatAdapter;
     private UserDto currentUser;
+
+    private File imagePath;
 
     public ChatDetailScreen() {
     }
@@ -139,6 +146,7 @@ public class ChatDetailScreen extends Fragment {
         mBtnPick = mRootView.findViewById(R.id.chat_detail_btn_pick);
         back = mRootView.findViewById(R.id.back);
         tvHeaderName = mRootView.findViewById(R.id.chat_detail_tv_title);
+        mBtnScreenShot = mRootView.findViewById(R.id.chat_detail_btn_pick_screen_shot);
 
         friendChatAdapter = new FriendChatAdapter(getContext(), new ArrayList<>(), currentUser);
         mRcv.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -162,6 +170,19 @@ public class ChatDetailScreen extends Fragment {
             intent.setType("image/*");
             startActivityForResult(intent, OPEN_DOCUMENT_CODE);
         });
+
+        mBtnScreenShot.setOnClickListener(view -> {
+            Bitmap bitmap = getScreenShot(view);
+            uploadFile(bitmap);
+        });
+    }
+
+    public static Bitmap getScreenShot(View view) {
+        View screenView = view.getRootView();
+        screenView.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
+        screenView.setDrawingCacheEnabled(false);
+        return bitmap;
     }
 
     @Override
