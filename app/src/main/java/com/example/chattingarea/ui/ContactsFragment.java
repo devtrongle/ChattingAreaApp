@@ -109,15 +109,15 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
                             public void onCompletedSendRequestContact(
                                     Constant.StatusRequest statusRequest, String message) {
                                 if(statusRequest == Constant.StatusRequest.SUCCESS){
-                                    mListFilter.remove(position);
-                                    mFindFriendAdapter.submitList(mListFilter);
                                     Toast.makeText(view.getContext(), "Gửi kết bạn thành công!",
+                                            Toast.LENGTH_SHORT).show();
+                                }else if(statusRequest == Constant.StatusRequest.EXIST){
+                                    Toast.makeText(view.getContext(), "Bạn đã gửi kết bạn cho " + userDto.getName() + " rồi!",
                                             Toast.LENGTH_SHORT).show();
                                 }else{
                                     Toast.makeText(view.getContext(), "Gửi kết bạn thất bại!",
                                             Toast.LENGTH_SHORT).show();
                                 }
-
                             }
                         });
             }
@@ -248,7 +248,6 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
             if(c.getId().equals(contact.getId()))
                 return;
         }
-
         contactList.add(contact);
     }
 
@@ -282,9 +281,8 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
 
                     @Override
                     public void onDenyClick(UserDto userDto, Contact contact, int position) {
-                        contact.setStatus(Constant.StatusContacts.DENY);
-                        mRealtimeDatabaseUtils.updateContact(contact);
                         mRequestAdapter.removeItem(position);
+                        mRealtimeDatabaseUtils.deleteContact(contact);
                         Toast.makeText(requireContext(), "Đã từ chối lời mời!", Toast.LENGTH_SHORT).show();
                     }
                 });

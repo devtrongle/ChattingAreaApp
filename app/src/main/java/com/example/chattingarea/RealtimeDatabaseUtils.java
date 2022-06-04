@@ -89,18 +89,12 @@ public class RealtimeDatabaseUtils {
     public void getAllContacts(@NonNull IGetAllContacts callback) {
         mContactsRef.get().addOnSuccessListener(dataSnapshot -> {
             List<Contact> allContacts = new ArrayList<>();
-            List<Contact> t = new ArrayList<>();
-
             for (DataSnapshot d : dataSnapshot.getChildren()) {
                 Contact contact = d.getValue(Contact.class);
-                t.add(contact);
                 if(Contact.isMyContact(mUId,contact, allContacts)){
                     allContacts.add(contact);
                 }
             }
-
-            Log.d(TAG, "Contacts: " + t.size());
-            Log.d(TAG, "Contacts all: " + allContacts.size());
 
             callback.onCompletedGetAllContacts(
                     allContacts.size() == 0 ? Constant.StatusRequest.NO_DATA
@@ -112,29 +106,59 @@ public class RealtimeDatabaseUtils {
     }
 
     public void sendRequestContact(@NonNull String uidToSend, ISendRequestContact callback) {
-        String id = mContactsRef.push().getKey();
-        if(id == null) {
-            Timber.e("ID null");
+        mContactsRef.get().addOnSuccessListener(dataSnapshot -> {
+            boolean isExist = false;
+            String id = mContactsRef.push().getKey();
+            if(id == null) {
+                Timber.e("ID null");
+                if (callback != null) {
+                    callback.onCompletedSendRequestContact(
+                            Constant.StatusRequest.FAIL, "ID null");
+                }
+                return;
+            }
+            Contact contact = Contact.createRequest(id,mUId, uidToSend);
+
+            for (DataSnapshot d : dataSnapshot.getChildren()) {
+                Contact c = d.getValue(Contact.class);
+                if(c == null){
+                    continue;
+                }
+                if(c.getAuth().equals(contact.getAuth()) &&
+                        c.getDestination().equals(contact.getDestination())){
+                    isExist = true;
+                }
+            }
+
+            if(!isExist){
+                mContactsRef.child(id).setValue(Contact.createRequest(id,mUId, uidToSend))
+                        .addOnSuccessListener(unused -> {
+                            if (callback != null) {
+                                callback.onCompletedSendRequestContact(
+                                        Constant.StatusRequest.SUCCESS, "Success");
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            Timber.e(e);
+                            if (callback != null) {
+                                callback.onCompletedSendRequestContact(
+                                        Constant.StatusRequest.FAIL, e.getMessage());
+                            }
+                        });
+            }else{
+                if (callback != null) {
+                    callback.onCompletedSendRequestContact(Constant.StatusRequest.EXIST, "Đã tồn tại");
+                }
+            }
+
+
+        }).addOnFailureListener(e -> {
+            Timber.e(e);
             if (callback != null) {
                 callback.onCompletedSendRequestContact(
-                        Constant.StatusRequest.FAIL, "ID null");
+                        Constant.StatusRequest.FAIL, e.getMessage());
             }
-            return;
-        }
-        mContactsRef.child(id).setValue(Contact.createRequest(id,mUId, uidToSend))
-                .addOnSuccessListener(unused -> {
-                    if (callback != null) {
-                        callback.onCompletedSendRequestContact(
-                                Constant.StatusRequest.SUCCESS, "Success");
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Timber.e(e);
-                    if (callback != null) {
-                        callback.onCompletedSendRequestContact(
-                                Constant.StatusRequest.FAIL, e.getMessage());
-                    }
-                });
+        });
     }
 
     public void updateContact(@NonNull Contact contact){
