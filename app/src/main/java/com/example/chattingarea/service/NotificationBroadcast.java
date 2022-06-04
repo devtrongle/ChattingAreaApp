@@ -55,7 +55,7 @@ public class NotificationBroadcast extends BroadcastReceiver {
                     true,
                     uIdCurrent,
                     nameCurrent,
-                    avaCurrent
+                    avaCurrent,Constant.TEXT
             );
 
             mRoomRef.child(uIdCurrent).child(uIdOther).child(Utils.generateString()).setValue(messDto);

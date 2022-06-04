@@ -180,7 +180,7 @@ public class GroupChatDetailScreen extends Fragment {
     private void addChat(String mess) {
         String key = Utils.generateString();
         MessageDetailDto messDto = new MessageDetailDto(
-                key, mess, new Date(), true, currentUser.getId(), currentUser.getName(), currentUser.getUrlAva()
+                key, mess, new Date(), true, currentUser.getId(), currentUser.getName(), currentUser.getUrlAva(), Constant.TEXT
         );
 
         mGroupChatRef.child(uIdOther).child(Utils.generateString()).setValue(messDto);
@@ -189,7 +189,7 @@ public class GroupChatDetailScreen extends Fragment {
     private void addChatImg(String urlAva) {
         String key = Utils.generateString();
         MessageDetailDto messDto = new MessageDetailDto(
-                key, urlAva, new Date(), false, currentUser.getId(), currentUser.getName(), currentUser.getUrlAva()
+                key, urlAva, new Date(), false, currentUser.getId(), currentUser.getName(), currentUser.getUrlAva(), Constant.IMAGE
         );
         mGroupChatRef.child(uIdOther).child(Utils.generateString()).setValue(messDto);
     }

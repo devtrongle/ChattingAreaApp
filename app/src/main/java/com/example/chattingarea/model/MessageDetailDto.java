@@ -1,12 +1,16 @@
 package com.example.chattingarea.model;
 
+import com.example.chattingarea.Constant;
+
 import java.util.Date;
 
 public class MessageDetailDto {
+
     private String messageId;
     private String content;
     private Date timestamp;
     private boolean isStringType;
+    private String type;
 
     private String uId;
     private String uName;
@@ -40,6 +44,15 @@ public class MessageDetailDto {
         return isStringType;
     }
 
+    public String getType() {
+        return type == null ? Constant.TEXT : type.equals("") ?  Constant.TEXT : type;
+
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public void setStringType(boolean stringType) {
         isStringType = stringType;
     }
@@ -71,7 +84,7 @@ public class MessageDetailDto {
     public MessageDetailDto() {
     }
 
-    public MessageDetailDto(String messageId, String content, Date timestamp, boolean isStringType, String uId, String uName, String uAva) {
+    public MessageDetailDto(String messageId, String content, Date timestamp, boolean isStringType, String uId, String uName, String uAva, String type) {
         this.messageId = messageId;
         this.content = content;
         this.timestamp = timestamp;
@@ -79,5 +92,6 @@ public class MessageDetailDto {
         this.uId = uId;
         this.uName = uName;
         this.uAva = uAva;
+        this.type = type;
     }
 }

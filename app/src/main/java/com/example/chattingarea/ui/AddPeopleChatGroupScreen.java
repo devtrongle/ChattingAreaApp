@@ -229,7 +229,7 @@ public class AddPeopleChatGroupScreen extends Fragment implements UserAdapter.Cl
     private void addUserToGroup(String id) {
         String keyMess = Utils.generateString();
         MessageDetailDto messDummy = new MessageDetailDto(
-                keyMess, "", new Date(), true, currentUser.getId(), currentUser.getName(), currentUser.getUrlAva()
+                keyMess, "", new Date(), true, currentUser.getId(), currentUser.getName(), currentUser.getUrlAva(), Constant.TEXT
         );
         mGroupChatRef.child(keyGroup).child(keyMess).setValue(messDummy);
     }

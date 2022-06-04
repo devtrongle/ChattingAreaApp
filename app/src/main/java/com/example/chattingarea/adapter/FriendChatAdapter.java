@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.chattingarea.Constant;
 import com.example.chattingarea.R;
 import com.example.chattingarea.model.MessageDetailDto;
 import com.example.chattingarea.model.UserDto;
@@ -80,6 +81,7 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         TextView tvMess;
         TextView tvTimestamp;
         ImageView ivPick;
+        ImageView ivVideo;
 
         public ItemMessageLeftHolder(View itemView) {
             super(itemView);
@@ -88,6 +90,7 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             tvMess = itemView.findViewById(R.id.item_left_tv_message);
             tvTimestamp = itemView.findViewById(R.id.item_left_tv_timestamp);
             ivPick = itemView.findViewById(R.id.item_left_iv_message);
+            ivVideo = itemView.findViewById(R.id.item_left_play_video_message);
         }
 
         public void bind(MessageDetailDto messageDetailDto, int position, Context context) {
@@ -104,13 +107,24 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     .centerCrop()
                     .into(ciAva);
             tvName.setText(messageDetailDto.getuName());
-            if (messageDetailDto.isStringType()) {
+            if (messageDetailDto.getType().equals(Constant.TEXT)) {
                 tvMess.setVisibility(View.VISIBLE);
                 ivPick.setVisibility(View.GONE);
+                ivVideo.setVisibility(View.GONE);
                 tvMess.setText(messageDetailDto.getContent());
-            } else {
+            } else if (messageDetailDto.getType().equals(Constant.IMAGE)){
+                tvMess.setVisibility(View.GONE);
+                ivVideo.setVisibility(View.GONE);
+                ivPick.setVisibility(View.VISIBLE);
+                Glide.with(context)
+                        .load(messageDetailDto.getContent()) // image url
+                        .placeholder(R.drawable.img) // any placeholder to load at start
+                        .error(R.drawable.img)  // any image in case of error
+                        .into(ivPick);
+            }else{
                 tvMess.setVisibility(View.GONE);
                 ivPick.setVisibility(View.VISIBLE);
+                ivVideo.setVisibility(View.VISIBLE);
                 Glide.with(context)
                         .load(messageDetailDto.getContent()) // image url
                         .placeholder(R.drawable.img) // any placeholder to load at start
@@ -128,12 +142,14 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         TextView tvMess;
         TextView tvTimestamp;
         ImageView ivPick;
+        ImageView ivVideo;
 
         public ItemMessageRightHolder(View itemView) {
             super(itemView);
             tvMess = itemView.findViewById(R.id.item_right_tv_message);
             tvTimestamp = itemView.findViewById(R.id.item_right_tv_timestamp);
             ivPick = itemView.findViewById(R.id.item_right_iv_message);
+            ivVideo = itemView.findViewById(R.id.item_right_play_video_message);
         }
 
         public void bind(MessageDetailDto messageDetailDto, int position, Context context) {
@@ -142,12 +158,24 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             } else {
                 itemView.setVisibility(View.VISIBLE);
             }
-            if (messageDetailDto.isStringType()) {
+
+            if (messageDetailDto.getType().equals(Constant.TEXT)) {
                 tvMess.setVisibility(View.VISIBLE);
                 ivPick.setVisibility(View.GONE);
+                ivVideo.setVisibility(View.GONE);
                 tvMess.setText(messageDetailDto.getContent());
+            }else if (messageDetailDto.getType().equals(Constant.IMAGE)) {
+                tvMess.setVisibility(View.GONE);
+                ivVideo.setVisibility(View.GONE);
+                ivPick.setVisibility(View.VISIBLE);
+                Glide.with(context)
+                        .load(messageDetailDto.getContent()) // image url
+                        .placeholder(R.drawable.img) // any placeholder to load at start
+                        .error(R.drawable.img)  // any image in case of error
+                        .into(ivPick);
             } else {
                 tvMess.setVisibility(View.GONE);
+                ivVideo.setVisibility(View.VISIBLE);
                 ivPick.setVisibility(View.VISIBLE);
                 Glide.with(context)
                         .load(messageDetailDto.getContent()) // image url
