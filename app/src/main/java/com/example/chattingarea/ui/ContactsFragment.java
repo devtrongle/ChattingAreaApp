@@ -109,6 +109,8 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
                             public void onCompletedSendRequestContact(
                                     Constant.StatusRequest statusRequest, String message) {
                                 if(statusRequest == Constant.StatusRequest.SUCCESS){
+                                    mListFilter.remove(position);
+                                    mFindFriendAdapter.submitList(mListFilter);
                                     Toast.makeText(view.getContext(), "Gửi kết bạn thành công!",
                                             Toast.LENGTH_SHORT).show();
                                 }else{
@@ -212,6 +214,8 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
 
         mListAllContact = allContacts;
         mListFriend = new ArrayList<>();
+        mListMyRequestFriend.clear();
+        mListRequestFriend.clear();
 
         for(Contact contact : mListAllContact){
             if(contact.getStatus().equals(Constant.StatusContacts.FRIEND)){
