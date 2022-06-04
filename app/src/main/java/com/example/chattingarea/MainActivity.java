@@ -2,19 +2,9 @@ package com.example.chattingarea;
 
 import static com.example.chattingarea.ui.ChatDetailScreen.KEY_TEXT_REPLY;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.app.RemoteInput;
-
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -23,35 +13,34 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.RemoteInput;
+
 import com.example.chattingarea.model.MessageDetailDto;
 import com.example.chattingarea.model.UserDto;
 import com.example.chattingarea.service.MessageService;
 import com.example.chattingarea.service.NotificationBroadcast;
-import com.example.chattingarea.ui.ChatDetailScreen;
 import com.example.chattingarea.ui.ChatGroup_Screen;
 import com.example.chattingarea.ui.ChatOverviewScreen;
 import com.example.chattingarea.ui.ContactsFragment;
 import com.example.chattingarea.ui.HomeScreen;
 import com.example.chattingarea.ui.LoginScreen;
 import com.example.chattingarea.ui.ProfileScreen;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -60,14 +49,13 @@ public class MainActivity extends AppCompatActivity {
     public static final String U_ID_OTHER = "uIdOther";
     public static final String NAME_CURRENT = "nameCurrent";
     public static final String AVA_CURRENT = "avaCurrent";
+    private final static String TAG = MainActivity.class.getSimpleName();
+    public static int REQUEST_ID = 1;
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
     private DatabaseReference mUserRef;
     private DatabaseReference mRoomRef;
     private FirebaseAuth mFirebaseAuth;
-
-    private final static String TAG = MainActivity.class.getSimpleName();
-    public static int REQUEST_ID = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,10 +70,9 @@ public class MainActivity extends AppCompatActivity {
         initData();
         sendNotification();
         Intent pushIntent = new Intent(getApplicationContext(), MessageService.class);
-        pushIntent.putExtra(U_ID_CURRENT,FirebaseAuth.getInstance().getUid());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(pushIntent);
-        }else {
+        } else {
             startService(pushIntent);
         }
     }
@@ -115,47 +102,53 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendNotification() {
-        mRoomRef.child(FirebaseAuth.getInstance().getUid()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Log.d("TAG", "onChildAdded: %s" + snapshot.getChildren());
-                for (DataSnapshot s : snapshot.getChildren()) {
-                    Log.d("TAG", "DataSnapshot: %s" + s.getKey());
-                    listenerChildMess1(s.getKey());
-                }
-            }
+        if(FirebaseAuth.getInstance().getUid() == null) return;
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+        mRoomRef.child(FirebaseAuth.getInstance().getUid()).addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.d("TAG", "onChildAdded: %s" + snapshot.getChildren());
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            Log.d("TAG", "DataSnapshot: %s" + s.getKey());
+                            listenerChildMess1(s.getKey());
+                        }
+                    }
 
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
     }
 
     private void listenerChildMess1(String s) {
         List<MessageDetailDto> mess = new ArrayList<>();
-        mRoomRef.child(FirebaseAuth.getInstance().getUid()).child(s).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Log.e("TAG", "DataSnapshot: " + s);
-
-                for (DataSnapshot s : snapshot.getChildren()) {
-                    mess.add(s.getValue(MessageDetailDto.class));
-                }
-                Collections.sort(mess, new Comparator<MessageDetailDto>() {
+        mRoomRef.child(FirebaseAuth.getInstance().getUid()).child(s).addValueEventListener(
+                new ValueEventListener() {
                     @Override
-                    public int compare(MessageDetailDto messageDetailDto, MessageDetailDto t1) {
-                        return Long.compare(t1.getTimestamp().getTime(), messageDetailDto.getTimestamp().getTime());
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.e("TAG", "DataSnapshot: " + s);
+
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            mess.add(s.getValue(MessageDetailDto.class));
+                        }
+                        Collections.sort(mess, new Comparator<MessageDetailDto>() {
+                            @Override
+                            public int compare(MessageDetailDto messageDetailDto,
+                                    MessageDetailDto t1) {
+                                return Long.compare(t1.getTimestamp().getTime(),
+                                        messageDetailDto.getTimestamp().getTime());
+                            }
+                        });
+                        sendNotificationMess(mess.get(0), s);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
                     }
                 });
-                sendNotificationMess(mess.get(0), s);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
     }
 
     private void sendNotificationMess(MessageDetailDto remoteMessage, String s) {
@@ -170,9 +163,16 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(U_ID_OTHER, s);
             intent.putExtra(NAME_CURRENT, remoteMessage.getuName());
             intent.putExtra(AVA_CURRENT, remoteMessage.getuAva());
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(this,
-                    REQUEST_ID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+            PendingIntent pendingIntent;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                pendingIntent = PendingIntent.getBroadcast(this,
+                        REQUEST_ID, intent, PendingIntent.FLAG_MUTABLE);
+            }
+            else
+            {
+                pendingIntent = PendingIntent.getBroadcast(this,
+                        REQUEST_ID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            }
             NotificationCompat.Action replyAction =
                     new NotificationCompat.Action.Builder(
                             R.drawable.ic_launcher_background,

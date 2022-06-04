@@ -22,6 +22,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +38,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.chattingarea.BuildConfig;
 import com.example.chattingarea.Constant;
 import com.example.chattingarea.MainActivity;
 import com.example.chattingarea.R;
@@ -65,6 +67,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -79,6 +82,8 @@ public class ChatDetailScreen extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private static final int OPEN_DOCUMENT_CODE = 22;
+    private static final int REQUEST_CAMERA = 21112;
+
     public static final String KEY_TEXT_REPLY = "key_text_reply";
     private String uIdOther;
     private FirebaseDatabase mDatabase;
@@ -101,6 +106,12 @@ public class ChatDetailScreen extends Fragment {
     private UserDto currentUser;
 
     private File imagePath;
+
+    private File file = null;
+
+    private static final String AUTHORITY=
+            BuildConfig.APPLICATION_ID+".provider";
+
 
     public ChatDetailScreen() {
     }
@@ -172,9 +183,26 @@ public class ChatDetailScreen extends Fragment {
         });
 
         mBtnScreenShot.setOnClickListener(view -> {
-            Bitmap bitmap = getScreenShot(view);
-            uploadFile(bitmap);
+//            Bitmap bitmap = getScreenShot(view);
+//            uploadFile(bitmap);
+
+            capture();
         });
+    }
+
+
+
+    private void capture(){
+        try {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            File file = new File(Environment.getExternalStorageDirectory(), Calendar.getInstance().getTimeInMillis() + ".jpg");
+            Uri photoPath = FileProvider.getUriForFile(Objects.requireNonNull(requireContext()),
+                    AUTHORITY, file);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoPath);   //--> here
+            startActivityForResult(Intent.createChooser(intent, "Complete action using"), REQUEST_CAMERA);
+        }catch (Exception e){
+            Log.e("CheckApp", e.toString());
+        }
     }
 
     public static Bitmap getScreenShot(View view) {
@@ -187,15 +215,32 @@ public class ChatDetailScreen extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        if (requestCode == OPEN_DOCUMENT_CODE && resultCode == RESULT_OK) {
+        Log.d("CheckApp", "requestCode: " + requestCode);
+        if (resultCode == RESULT_OK) {
+            Log.d("CheckApp", "requestCode: " + requestCode);
             if (resultData != null) {
                 Uri imageUri = resultData.getData();
                 Bitmap bitmap = null;
-                try {
-                    bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imageUri);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                Uri outputUri=FileProvider.getUriForFile(requireContext(), AUTHORITY, file);
+
+                switch (requestCode){
+                    case REQUEST_CAMERA:
+                        Log.d("CheckApp", "Camera");
+
+                        try {
+                            bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), outputUri);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case OPEN_DOCUMENT_CODE:
+                        try {
+                            bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), outputUri);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                 }
+
                 uploadFile(bitmap);
             }
         }
@@ -218,6 +263,8 @@ public class ChatDetailScreen extends Fragment {
             }).addOnFailureListener(exception -> {
                 Log.d("addChatImg", "upload img Fail!");
             });
+        }else{
+            Log.d("CheckApp", "bitmap == null");
         }
     }
 

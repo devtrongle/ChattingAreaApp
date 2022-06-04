@@ -65,8 +65,16 @@ public class MessageService extends Service {
             intent.putExtra(U_ID_OTHER, s);
             intent.putExtra(NAME_CURRENT, remoteMessage.getuName());
             intent.putExtra(AVA_CURRENT, remoteMessage.getuAva());
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(this,
-                    REQUEST_ID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                pendingIntent = PendingIntent.getBroadcast(this,
+                        REQUEST_ID, intent, PendingIntent.FLAG_MUTABLE);
+            }
+            else
+            {
+                pendingIntent = PendingIntent.getBroadcast(this,
+                        REQUEST_ID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            }
 
             NotificationCompat.Action replyAction =
                     new NotificationCompat.Action.Builder(
@@ -101,6 +109,7 @@ public class MessageService extends Service {
     }
 
     private void sendNotification(String uIdCurrenr) {
+        if(uIdCurrenr == null) return;
         mRoomRef.child(uIdCurrenr).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -155,10 +164,8 @@ public class MessageService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("Service", "service starting");
-        Log.d("Service", "service starting"+ intent.getStringExtra(U_ID_CURRENT));
 
-        sendNotification(intent.getStringExtra(U_ID_CURRENT));
+        sendNotification(FirebaseAuth.getInstance().getUid());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
