@@ -167,7 +167,7 @@ public class ChatDetailScreen extends Fragment {
         mBtnPick.setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("image/*");
+            intent.setType("*/*");
             startActivityForResult(intent, OPEN_DOCUMENT_CODE);
         });
 
