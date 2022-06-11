@@ -1,9 +1,18 @@
 package com.example.chattingarea.ui;
 
+import static com.example.chattingarea.ui.ChatDetailScreen.REQUEST_ID;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,16 +34,23 @@ import com.example.chattingarea.adapter.MyFriendAdapter;
 import com.example.chattingarea.adapter.MyRequestAdapter;
 import com.example.chattingarea.adapter.RequestAdapter;
 import com.example.chattingarea.model.Contact;
+import com.example.chattingarea.model.MessageDetailDto;
 import com.example.chattingarea.model.UserDto;
+import com.example.chattingarea.service.NotificationRequestBroadcast;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import timber.log.Timber;
 
 
 public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.IGetAllUser, RealtimeDatabaseUtils.IGetAllContacts {
+
 
     private int loadBaseData = 0;
 
@@ -43,11 +59,12 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
     private List<Contact> mListAllContact;
     private List<Contact> mListRequestFriend;
     private List<Contact> mListMyRequestFriend;
-
+    private FirebaseDatabase mDatabase;
     private RequestAdapter mRequestAdapter;
     private MyRequestAdapter mMyRequestAdapter;
     private FindFriendAdapter mFindFriendAdapter;
     private MyFriendAdapter mMyFriendAdapter;
+    private DatabaseReference mUserRef;
 
     private List<UserDto> mListFilter;
 
@@ -77,6 +94,8 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
         rvRequest = view.findViewById(R.id.list_request);
         rvMyRequest = view.findViewById(R.id.list_my_request);
 
+        mDatabase = FirebaseDatabase.getInstance();
+        mUserRef = mDatabase.getReference(Constant.USER_REF);
         mRealtimeDatabaseUtils = RealtimeDatabaseUtils.getInstance(requireContext());
         mListAllUser = new ArrayList<>();
         mListFriend = new ArrayList<>();
@@ -267,6 +286,7 @@ public class ContactsFragment extends Fragment implements RealtimeDatabaseUtils.
     }
 
     private void setupRequestFriend(){
+
         mRequestAdapter = new RequestAdapter(requireContext(), mListRequestFriend, mListAllUser,
                 new RequestAdapter.ClickListener() {
                     @Override

@@ -2,6 +2,7 @@ package com.example.chattingarea;
 
 import static com.example.chattingarea.ui.ChatDetailScreen.KEY_TEXT_REPLY;
 
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -19,31 +20,39 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
 
+import com.example.chattingarea.model.Contact;
 import com.example.chattingarea.model.MessageDetailDto;
 import com.example.chattingarea.model.UserDto;
 import com.example.chattingarea.service.MessageService;
 import com.example.chattingarea.service.NotificationBroadcast;
+import com.example.chattingarea.service.NotificationRequestBroadcast;
 import com.example.chattingarea.ui.ChatGroup_Screen;
 import com.example.chattingarea.ui.ChatOverviewScreen;
 import com.example.chattingarea.ui.ContactsFragment;
 import com.example.chattingarea.ui.HomeScreen;
 import com.example.chattingarea.ui.LoginScreen;
 import com.example.chattingarea.ui.ProfileScreen;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    public static final String ACTION_ACCEPT = "ACEEPT";
+    public static final String ACTION_REJECT = "REJECT";
     public static final String U_ID_CURRENT = "uIDCurrent";
     public static final String RUN_BG = "BG";
     public static final String U_ID_OTHER = "uIdOther";
@@ -53,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     public static int REQUEST_ID = 1;
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
+    private DatabaseReference mContact;
     private DatabaseReference mUserRef;
     private DatabaseReference mRoomRef;
     private FirebaseAuth mFirebaseAuth;
@@ -64,11 +74,13 @@ public class MainActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance();
         mRoomRef = mDatabase.getReference(Constant.ROOM_REF);
         mUserRef = mDatabase.getReference(Constant.USER_REF);
+        mContact = mDatabase.getReference(Constant.CONTACTS_REF);
         mFirebaseAuth = FirebaseAuth.getInstance();
         initView();
         initAction();
         initData();
         sendNotification();
+        sendRequestNoti();
         Intent pushIntent = new Intent(getApplicationContext(), MessageService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(pushIntent);
@@ -77,6 +89,116 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void sendRequestNoti() {
+                mContact.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        ArrayList<Contact> newContact = new ArrayList<>();
+                        for (DataSnapshot s: snapshot.getChildren() ) {
+                            newContact.add(s.getValue(Contact.class));
+                        }
+                        Collections.sort(newContact, new Comparator<Contact>() {
+                            @Override
+                            public int compare(Contact messageDetailDto,
+                                               Contact t1) {
+                                return Long.compare(t1.getTime(),
+                                        messageDetailDto.getTime());
+                            }
+                        });
+                                    if (newContact.size() > 0) {
+                                        Log.d(TAG, "onDataChange newContact.get(0).getStatus(): " + newContact.get(0).getStatus());
+                                        if (!newContact.get(0).getStatus().equals(Constant.StatusContacts.FRIEND)) {
+                                            if (FirebaseAuth.getInstance().getUid().equals(newContact.get(0).getDestination())) {
+                                                mUserRef.get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                                                    @Override
+                                                    public void onSuccess(DataSnapshot dataSnapshot) {
+                                                        UserDto user = null;
+                                                        for (DataSnapshot d : dataSnapshot.getChildren()) {
+                                                            if (d.getKey().equals(newContact.get(0).getAuth())) {
+                                                                user = d.getValue(UserDto.class);
+                                                            }
+                                                        }
+                                                        String channelId = getString(R.string.default_notification_channel_id_request);
+
+                                                        Intent accept = new Intent(getApplicationContext(), NotificationRequestBroadcast.class);
+                                                        accept.setAction(ACTION_ACCEPT);
+                                                        accept.putExtra("CONTACT",newContact.get(0).getId());
+
+                                                        Intent reject = new Intent(getApplicationContext(), NotificationRequestBroadcast.class);
+                                                        reject.setAction(ACTION_REJECT);
+                                                        reject.putExtra("CONTACT",newContact.get(0).getId());
+                                                        Log.d("TAG", "updateContact Test UsER: "+user.getName());
+
+                                                        Log.d("TAG", "updateContact Test: "+newContact.get(0).getId());
+
+                                                        PendingIntent pendingIntentAccept =
+                                                                PendingIntent.getBroadcast(getApplicationContext(), 0, accept, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                                                        PendingIntent pendingIntentReject =
+                                                                PendingIntent.getBroadcast(getApplicationContext(), 1, reject, PendingIntent.FLAG_UPDATE_CURRENT);
+//                                                        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
+//                                                                REQUEST_ID, accept,PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+                                                        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), channelId)
+                                                                .setSmallIcon(R.drawable.ic_lock)
+                                                                .setContentTitle("Lời mời kết bạn")
+                                                                .setContentText("Từ " + user.getName())
+                                                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                                                .setContentIntent(pendingIntentAccept)
+                                                                .setContentIntent(pendingIntentReject)
+                                                                .addAction(R.drawable.ic_lock, getString(R.string.accept),
+                                                                        pendingIntentAccept)
+                                                                .addAction(R.drawable.ic_check, getString(R.string.reject),
+                                                                        pendingIntentReject);
+
+                                                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+
+                                                        // Since android Oreo notification channel is needed.
+                                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                            NotificationChannel channel = new NotificationChannel(channelId,
+                                                                    "Channel human readable title",
+                                                                    NotificationManager.IMPORTANCE_DEFAULT);
+                                                            notificationManager.createNotificationChannel(channel);
+                                                        }
+                                                        notificationManager.notify(1112312, notificationBuilder.build());
+                                                    }
+                                                });
+
+
+                                            }
+                                        }
+                                    }
+
+                            }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+    }
+
+    private UserDto getUserFromDb(HashMap value) {
+        UserDto userDto = new UserDto();
+        userDto.setName((String) value.get("name"));
+        userDto.setAddress((String) value.get("address"));
+        userDto.setPhoneNumber((String) value.get("phoneNumber"));
+        userDto.setAge((String) value.get("age"));
+        userDto.setId((String) value.get("id"));
+        userDto.setGender(false);
+        userDto.setUrlAva((String) value.get("urlAva"));
+        return userDto;
+    }
+
+    public UserDto getUserByUId(String uid, ArrayList<UserDto> al){
+        for (UserDto u :
+                al) {
+            if (u.getId().equals(uid)) return u;
+        }
+        return null;
+    }
 
     @Override
     protected void onStart() {

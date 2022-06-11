@@ -4,10 +4,11 @@ import android.content.Context;
 
 import com.example.chattingarea.Constant;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class Contact {
+public class Contact implements Serializable {
 
     private String id;
     private String auth;

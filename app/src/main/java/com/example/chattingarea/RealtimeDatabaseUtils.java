@@ -162,6 +162,7 @@ public class RealtimeDatabaseUtils {
     }
 
     public void updateContact(@NonNull Contact contact){
+        Log.d("TAG", "updateContact: "+contact.getId());
         mContactsRef.child(contact.getId()).setValue(contact);
     }
 

@@ -3,5 +3,9 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="default_notification_channel_id">Message</string>
+    <string name="default_notification_channel_id_request">Request</string>
+    <string name="default_notification_channel_id_close">Close</string>
     <string name="reply_label">Trả lời</string>
+    <string name="accept">Đồng ý</string>
+    <string name="reject">Từ chối</string>
 </resources>
