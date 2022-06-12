@@ -1,8 +1,10 @@
 package com.example.chattingarea.ui;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.chattingarea.Constant;
 import com.example.chattingarea.R;
@@ -261,6 +264,30 @@ public class ChatOverviewScreen extends Fragment implements ChatOverviewAdapter.
                 .addToBackStack(ChatDetailScreen.class.getSimpleName())
                 .add(R.id.home_container, cs)
                 .commitAllowingStateLoss();
+    }
+
+    @Override
+    public void onItemLongClick(String id, int position) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Xóa đoạn chat")
+                .setMessage("Bạn muốn xóa đoạn chat này?")
+                .setNegativeButton("Xóa", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        RealtimeDatabaseUtils.getInstance(requireContext())
+                                .deleteChat(id);
+                        Toast.makeText(requireContext(), "Đã xóa đoạn chat",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setPositiveButton("Đóng", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .show();
     }
 
     public interface DataFirebaseInterface {

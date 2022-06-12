@@ -2,6 +2,11 @@ package com.example.chattingarea.ui;
 
 import static android.app.Activity.RESULT_OK;
 
+import static com.example.chattingarea.Constant.VIDEO;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -13,12 +18,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.PermissionChecker;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,6 +42,7 @@ import com.example.chattingarea.adapter.FriendChatAdapter;
 import com.example.chattingarea.model.GroupDto;
 import com.example.chattingarea.model.MessageDetailDto;
 import com.example.chattingarea.model.UserDto;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -38,6 +51,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,13 +59,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GroupChatDetailScreen extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private static final int OPEN_DOCUMENT_CODE = 22;
+
+    private static final int MY_CAMERA_PERMISSION_CODE = 100;
+    private static final int REQUEST_CAMERA = 211112;
     private String uIdOther;
     private FirebaseDatabase mDatabase;
     private DatabaseReference mUserRef;
@@ -68,6 +83,7 @@ public class GroupChatDetailScreen extends Fragment {
     private ImageView mBtnPick;
     private AppCompatImageView back;
     private TextView tvHeaderName;
+    private ImageView mBtnScreenShot;
 
     private FriendChatAdapter friendChatAdapter;
     private UserDto currentUser;
@@ -104,7 +120,7 @@ public class GroupChatDetailScreen extends Fragment {
     private void initView() {
         mDatabase = FirebaseDatabase.getInstance();
         mGroupRef = mDatabase.getReference(Constant.GROUP_REF);
-        mGroupChatRef = mDatabase.getReference(Constant.GROUP_Chat_REF);
+        mGroupChatRef = mDatabase.getReference(Constant.GROUP_CHAT_REF);
         mUserRef = mDatabase.getReference(Constant.USER_REF);
         mFirebaseAuth = FirebaseAuth.getInstance();
         storage = FirebaseStorage.getInstance();
@@ -116,6 +132,7 @@ public class GroupChatDetailScreen extends Fragment {
         mBtnPick = mRootView.findViewById(R.id.chat_detail_btn_pick);
         back = mRootView.findViewById(R.id.back);
         tvHeaderName = mRootView.findViewById(R.id.chat_detail_tv_title);
+        mBtnScreenShot = mRootView.findViewById(R.id.chat_detail_btn_pick_screen_shot);
 
         friendChatAdapter = new FriendChatAdapter(getContext(), new ArrayList<>(), currentUser);
         mRcv.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -133,35 +150,109 @@ public class GroupChatDetailScreen extends Fragment {
                 mEdtChat.setText("");
             }
         });
+
+        mBtnScreenShot.setOnClickListener(view -> {
+            if (ContextCompat.checkSelfPermission(getContext(),
+                    Manifest.permission.CAMERA) != PermissionChecker.PERMISSION_GRANTED)
+            {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
+            }
+            else
+            {
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                someActivityResultLauncher.launch(cameraIntent);
+            }
+        });
+
         mBtnPick.setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("image/*");
+            intent.setType("*/*");
             startActivityForResult(intent, OPEN_DOCUMENT_CODE);
         });
     }
 
+    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // There are no request codes
+                        Intent data = result.getData();
+                        Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+                        uploadImageFile(bitmap);
+                    }
+                }
+            });
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        if (requestCode == OPEN_DOCUMENT_CODE && resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK) {
             if (resultData != null) {
-                Uri imageUri = resultData.getData();
+                Uri uri = resultData.getData();
                 Bitmap bitmap = null;
-                try {
-                    bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imageUri);
-                } catch (IOException e) {
-                    e.printStackTrace();
+
+                switch (requestCode){
+                    case REQUEST_CAMERA:
+                        try {
+                            bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
+                            uploadImageFile(bitmap);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case OPEN_DOCUMENT_CODE:
+                        if(getFileType(uri).equals("mp4")){
+                            uploadVideo(uri);
+                        }else{
+                            try {
+                                bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
+                                uploadImageFile(bitmap);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        break;
                 }
-                uploadFile(bitmap);
             }
         }
     }
 
-    public void uploadFile(Bitmap bitmap) {
+
+    private String getFileType(Uri videoUri) {
+        ContentResolver r = requireContext().getContentResolver();
+        // get the file type ,in this case its mp4
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(r.getType(videoUri));
+    }
+
+    private void uploadVideo(Uri videoUri) {
+        if (videoUri != null) {
+            // save the selected video in Firebase storage
+            final StorageReference reference = storageReference.child(Constant.ROOM_REF)
+                    .child(System.currentTimeMillis() + "." + getFileType(videoUri));
+            reference.putFile(videoUri).addOnSuccessListener(
+                    new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot snapshot) {
+                            snapshot.getStorage().getDownloadUrl().addOnCompleteListener(
+                                    task -> {
+                                        if (task.isSuccessful()) {
+                                            addChatVideo(task.getResult().toString());
+                                        }
+                                    });
+                        }
+                    });
+        }
+    }
+
+
+    public void uploadImageFile(Bitmap bitmap) {
         if (bitmap != null) {
             StorageReference imgRef = storageReference.child(Constant.ROOM_REF).child(Utils.generateString());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
             byte[] data = baos.toByteArray();
             imgRef.putBytes(data).addOnSuccessListener(snapshot -> {
                 snapshot.getStorage().getDownloadUrl().addOnCompleteListener(
@@ -174,6 +265,8 @@ public class GroupChatDetailScreen extends Fragment {
             }).addOnFailureListener(exception -> {
                 Log.d("addChatImg", "upload img Fail!");
             });
+        }else{
+            Log.d("CheckApp", "bitmap == null");
         }
     }
 
@@ -190,6 +283,15 @@ public class GroupChatDetailScreen extends Fragment {
         String key = Utils.generateString();
         MessageDetailDto messDto = new MessageDetailDto(
                 key, urlAva, new Date(), false, currentUser.getId(), currentUser.getName(), currentUser.getUrlAva(), Constant.IMAGE
+        );
+        mGroupChatRef.child(uIdOther).child(Utils.generateString()).setValue(messDto);
+    }
+
+
+    private void addChatVideo(String urlAva) {
+        String key = Utils.generateString();
+        MessageDetailDto messDto = new MessageDetailDto(
+                key, urlAva, new Date(), false, currentUser.getId(), currentUser.getName(), currentUser.getUrlAva(), VIDEO
         );
         mGroupChatRef.child(uIdOther).child(Utils.generateString()).setValue(messDto);
     }

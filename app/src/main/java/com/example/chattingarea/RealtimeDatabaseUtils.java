@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.chattingarea.model.Contact;
+import com.example.chattingarea.model.GroupDto;
 import com.example.chattingarea.model.UserDto;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -36,6 +37,9 @@ public class RealtimeDatabaseUtils {
     private final FirebaseDatabase mDatabase;
     private final DatabaseReference mContactsRef;
     private final DatabaseReference mUserRef;
+    private final DatabaseReference mRoomRef;
+    private final DatabaseReference mGroupRef;
+    private final DatabaseReference mGroupChatRef;
     private final FirebaseAuth mFirebaseAuth;
     private final String mUId;
 
@@ -55,6 +59,9 @@ public class RealtimeDatabaseUtils {
         this.mContext = context;
         this.mDatabase = FirebaseDatabase.getInstance();
         this.mUserRef = mDatabase.getReference(Constant.USER_REF);
+        this.mRoomRef = mDatabase.getReference(Constant.ROOM_REF);
+        this.mGroupRef = mDatabase.getReference(Constant.GROUP_REF);
+        this.mGroupChatRef = mDatabase.getReference(Constant.GROUP_CHAT_REF);
         this.mContactsRef = mDatabase.getReference(Constant.CONTACTS_REF);
         this.mFirebaseAuth = FirebaseAuth.getInstance();
         this.mUId = mFirebaseAuth.getUid();
@@ -202,6 +209,113 @@ public class RealtimeDatabaseUtils {
         userDto.setGender(false);
         userDto.setUrlAva((String) value.get("urlAva"));
         return userDto;
+    }
+
+    public void deleteChat(String uidDestination){
+        mRoomRef.child(mUId).child(uidDestination).removeValue();
+        mRoomRef.child(uidDestination).child(mUId).removeValue();
+    }
+
+    public void getAllFriend(IGetAllFriend callback){
+        getAllUser(new IGetAllUser() {
+            @Override
+            public void onCompletedGetAllUser(Constant.StatusRequest statusRequest,
+                    List<UserDto> allUsers, String message) {
+                getAllContacts(new IGetAllContacts() {
+                    @Override
+                    public void onCompletedGetAllContacts(Constant.StatusRequest statusRequest,
+                            List<Contact> allContacts, String myUid, String message) {
+                        List<UserDto> listFriend = new ArrayList<>();
+                        for(Contact contact : allContacts){
+                            if(contact.getStatus().equals(Constant.StatusContacts.FRIEND)){
+                                if(myUid.equals(contact.getAuth())){
+                                    listFriend.add(getUserById(contact.getDestination(),allUsers));
+                                }else{
+                                    listFriend.add(getUserById(contact.getAuth(), allUsers));
+                                }
+                            }
+                        }
+
+                        callback.onCompletedGetAllFriend(Constant.StatusRequest.SUCCESS, listFriend, "Success");
+                    }
+                });
+            }
+        });
+    }
+
+    public void getMemberOfGroup(String groupId, IGetMemberInGroup callback){
+        getAllFriend(new IGetAllFriend() {
+            @Override
+            public void onCompletedGetAllFriend(Constant.StatusRequest statusRequest,
+                    List<UserDto> allFriend, String message) {
+                mGroupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        ArrayList<UserDto> memberInGroup = new ArrayList<>();
+                        ArrayList<UserDto> memberNotInGroup = new ArrayList<>();
+                        Map<String, Map<String, Object>> map = (Map<String, Map<String, Object>>) snapshot.getValue();
+                        for(Map.Entry<String, Map<String, Object>> entryUser : map.entrySet()){
+                            for(Map.Entry<String, Object> entryChat : entryUser.getValue().entrySet()){
+                                UserDto member = getUserById(entryUser.getKey(), allFriend);
+                                if(member != null && !member.getId().equals(mUId)){
+                                    if(entryChat.getKey().equals(groupId)){
+                                        memberInGroup.add(member);
+                                    }
+                                }
+                            }
+                        }
+
+                        for(UserDto userDto : allFriend){
+                            boolean isAdd = true;
+                            for(UserDto member : memberInGroup){
+                                if(member.getId().equals(userDto.getId())){
+                                    isAdd = false;
+                                    break;
+                                }
+                            }
+
+                            if(isAdd){
+                                memberNotInGroup.add(userDto);
+                            }
+                        }
+
+                        callback.onCompletedGetMemberInGroup(Constant.StatusRequest.SUCCESS,memberNotInGroup,memberInGroup,"Success");
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onCompletedGetMemberInGroup(Constant.StatusRequest.FAIL,null,null,error.getMessage());
+                    }
+                });
+            }
+        });
+    }
+
+    public void deleteMember(String uid, String groupId){
+        mGroupRef.child(uid).child(groupId).removeValue();
+    }
+
+    public void addMember(String uid, GroupDto groupDto){
+        mGroupRef.child(uid).child(groupDto.getgId()).setValue(groupDto);
+    }
+
+    public UserDto getUserById(String id,  List<UserDto> allUsers){
+        for(UserDto userDto : allUsers){
+            if(userDto.getId().equals(id))
+                return userDto;
+        }
+        return null;
+    }
+
+
+    public interface IGetAllFriend {
+        void onCompletedGetAllFriend(Constant.StatusRequest statusRequest, List<UserDto> allFriend,
+                String message);
+    }
+
+    public interface IGetMemberInGroup{
+        void onCompletedGetMemberInGroup(Constant.StatusRequest statusRequest, List<UserDto> usersNotInGroup,List<UserDto> usersInGroup,
+                String message);
     }
 
     public interface IListenMyContact{

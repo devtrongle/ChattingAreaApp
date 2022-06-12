@@ -58,6 +58,15 @@ public class ChatOverviewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     mClickListener.onItemClick(data.getId());
                 }
             });
+
+            ((ChatOverviewViewHolder) holder).clContainer.setOnLongClickListener(
+                    new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View view) {
+                            mClickListener.onItemLongClick(data.getId(), holder.getAdapterPosition());
+                            return false;
+                        }
+                    });
         }
     }
 
@@ -71,6 +80,11 @@ public class ChatOverviewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.listData.clear();
         this.listData.addAll(listData);
         this.notifyDataSetChanged();
+    }
+
+    public void removeItem(int position){
+        this.listData.remove(position);
+        notifyItemRemoved(position);
     }
 
     static class ChatOverviewViewHolder extends RecyclerView.ViewHolder {
@@ -92,6 +106,7 @@ public class ChatOverviewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public interface ClickListener {
         void onItemClick(String id);
+        void onItemLongClick(String id, int position);
     }
 
 }

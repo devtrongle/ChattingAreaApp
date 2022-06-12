@@ -98,7 +98,7 @@ public class AddPeopleChatGroupScreen extends Fragment implements UserAdapter.Cl
         mUserRef = mDatabase.getReference(Constant.USER_REF);
         mGroupRef = mDatabase.getReference(Constant.GROUP_REF);
         mContactRef = mDatabase.getReference(Constant.CONTACTS_REF);
-        mGroupChatRef = mDatabase.getReference(Constant.GROUP_Chat_REF);
+        mGroupChatRef = mDatabase.getReference(Constant.GROUP_CHAT_REF);
         mFirebaseAuth = FirebaseAuth.getInstance();
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();

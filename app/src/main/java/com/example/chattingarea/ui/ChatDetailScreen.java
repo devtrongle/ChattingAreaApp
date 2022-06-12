@@ -179,9 +179,6 @@ public class ChatDetailScreen extends Fragment {
         });
 
         mBtnScreenShot.setOnClickListener(view -> {
-//            Bitmap bitmap = getScreenShot(view);
-//            uploadImageFile(bitmap);
-
             if (ContextCompat.checkSelfPermission(getContext(),Manifest.permission.CAMERA) != PermissionChecker.PERMISSION_GRANTED)
             {
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
@@ -225,15 +222,6 @@ public class ChatDetailScreen extends Fragment {
                 Toast.makeText(getContext(), "camera permission denied", Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-
-    public static Bitmap getScreenShot(View view) {
-        View screenView = view.getRootView();
-        screenView.setDrawingCacheEnabled(true);
-        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
-        screenView.setDrawingCacheEnabled(false);
-        return bitmap;
     }
 
     @Override

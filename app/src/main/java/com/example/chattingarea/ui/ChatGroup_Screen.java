@@ -144,4 +144,18 @@ public class ChatGroup_Screen extends Fragment implements GroupChatOverviewAdapt
                 .add(R.id.home_container, cs)
                 .commitAllowingStateLoss();
     }
+
+    @Override
+    public void onItemLongClick(GroupDto groupDto) {
+        EditGroupChatFragment editGroupChatFragment = new EditGroupChatFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(EditGroupChatFragment.GROUP_ID, groupDto.getgId());
+        bundle.putString(EditGroupChatFragment.GROUP_NAME, groupDto.getgName());
+        editGroupChatFragment.setArguments(bundle);
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .addToBackStack(EditGroupChatFragment.class.getSimpleName())
+                .add(R.id.home_container, editGroupChatFragment)
+                .commitAllowingStateLoss();
+    }
+
 }

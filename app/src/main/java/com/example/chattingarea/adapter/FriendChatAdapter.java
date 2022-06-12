@@ -1,14 +1,17 @@
 package com.example.chattingarea.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -16,6 +19,7 @@ import com.example.chattingarea.Constant;
 import com.example.chattingarea.R;
 import com.example.chattingarea.model.MessageDetailDto;
 import com.example.chattingarea.model.UserDto;
+import com.example.chattingarea.ui.VideoViewActivity;
 import com.github.siyamed.shapeimageview.CircularImageView;
 
 import java.text.SimpleDateFormat;
@@ -74,6 +78,12 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         return listData.get(position).getuId().equals(mUserDto.getId()) ? TYPE_CHAT_RIGHT : TYPE_CHAT_LEFT;
     }
 
+    private static void goToVideoView(Context context, String url){
+        Intent intent = new Intent(context, VideoViewActivity.class);
+        intent.putExtra("url", url);
+        context.startActivity(intent);
+    }
+
     static class ItemMessageLeftHolder extends RecyclerView.ViewHolder {
 
         CircularImageView ciAva;
@@ -82,6 +92,7 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         TextView tvTimestamp;
         ImageView ivPick;
         ImageView ivVideo;
+        LinearLayout container;
 
         public ItemMessageLeftHolder(View itemView) {
             super(itemView);
@@ -91,6 +102,7 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             tvTimestamp = itemView.findViewById(R.id.item_left_tv_timestamp);
             ivPick = itemView.findViewById(R.id.item_left_iv_message);
             ivVideo = itemView.findViewById(R.id.item_left_play_video_message);
+            container = itemView.findViewById(R.id.item_left_message_container);
         }
 
         public void bind(MessageDetailDto messageDetailDto, int position, Context context) {
@@ -135,6 +147,15 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm:ss a");
             String dateStr = DATE_FORMAT.format(messageDetailDto.getTimestamp());
             tvTimestamp.setText(dateStr);
+
+            container.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(messageDetailDto.getType().equals(Constant.VIDEO)){
+                        goToVideoView(context, messageDetailDto.getContent());
+                    }
+                }
+            });
         }
     }
 
@@ -143,6 +164,7 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         TextView tvTimestamp;
         ImageView ivPick;
         ImageView ivVideo;
+        CardView container;
 
         public ItemMessageRightHolder(View itemView) {
             super(itemView);
@@ -150,6 +172,7 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             tvTimestamp = itemView.findViewById(R.id.item_right_tv_timestamp);
             ivPick = itemView.findViewById(R.id.item_right_iv_message);
             ivVideo = itemView.findViewById(R.id.item_right_play_video_message);
+            container = itemView.findViewById(R.id.item_right_cv_message);
         }
 
         public void bind(MessageDetailDto messageDetailDto, int position, Context context) {
@@ -188,6 +211,15 @@ public class FriendChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm:ss a");
             String dateStr = DATE_FORMAT.format(messageDetailDto.getTimestamp());
             tvTimestamp.setText(dateStr);
+
+            container.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(messageDetailDto.getType().equals(Constant.VIDEO)){
+                        goToVideoView(context, messageDetailDto.getContent());
+                    }
+                }
+            });
         }
     }
 }

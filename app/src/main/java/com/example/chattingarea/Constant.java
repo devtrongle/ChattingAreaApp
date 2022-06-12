@@ -5,7 +5,7 @@ public final class Constant {
     public static final String CONTACTS_REF = "contacts";
     public static final String ROOM_REF = "room";
     public static final String GROUP_REF = "group";
-    public static final String GROUP_Chat_REF = "groupChat";
+    public static final String GROUP_CHAT_REF = "groupChat";
 
     public static final String TEXT = "text";
     public static final String IMAGE = "image";

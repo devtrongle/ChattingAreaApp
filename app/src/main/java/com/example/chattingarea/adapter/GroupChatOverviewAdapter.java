@@ -28,7 +28,7 @@ public class GroupChatOverviewAdapter extends RecyclerView.Adapter<RecyclerView.
     public GroupChatOverviewAdapter(Context context, ArrayList<GroupDto> listData, ClickListener clickListener) {
         this.context = context;
         this.listData = listData;
-        mClickListener = clickListener;
+        this.mClickListener = clickListener;
     }
 
     @NonNull
@@ -50,6 +50,15 @@ public class GroupChatOverviewAdapter extends RecyclerView.Adapter<RecyclerView.
                     mClickListener.onItemClick(data.getgId());
                 }
             });
+
+            ((ChatOverviewViewHolder) holder).clContainer.setOnLongClickListener(
+                    new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View view) {
+                            mClickListener.onItemLongClick(data);
+                            return true;
+                        }
+                    });
         }
     }
 
@@ -57,7 +66,6 @@ public class GroupChatOverviewAdapter extends RecyclerView.Adapter<RecyclerView.
     public int getItemCount() {
         return listData == null ? 0 : listData.size();
     }
-
 
     public void updateData(ArrayList<GroupDto> listData) {
         this.listData.clear();
@@ -80,6 +88,7 @@ public class GroupChatOverviewAdapter extends RecyclerView.Adapter<RecyclerView.
 
     public interface ClickListener {
         void onItemClick(String id);
+        void onItemLongClick(GroupDto groupDto);
     }
 
 }
