@@ -1,28 +1,35 @@
 package com.example.chattingarea.ui;
 
-import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 
+import static androidx.core.content.ContextCompat.checkSelfPermission;
 import static com.example.chattingarea.Constant.IMAGE;
 import static com.example.chattingarea.Constant.TEXT;
 import static com.example.chattingarea.Constant.VIDEO;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
-import androidx.core.content.FileProvider;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.PermissionChecker;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Environment;
+
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -33,6 +40,7 @@ import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.chattingarea.BuildConfig;
 import com.example.chattingarea.Constant;
@@ -41,7 +49,6 @@ import com.example.chattingarea.Utils;
 import com.example.chattingarea.adapter.FriendChatAdapter;
 import com.example.chattingarea.model.MessageDetailDto;
 import com.example.chattingarea.model.UserDto;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -57,16 +64,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+
 
 public class ChatDetailScreen extends Fragment {
 
     public static int REQUEST_ID = 1;
+    private static final int CAMERA_REQUEST = 1888;
+    private static final int MY_CAMERA_PERMISSION_CODE = 100;
 
     private static final String ARG_PARAM1 = "param1";
     private static final int OPEN_DOCUMENT_CODE = 22;
@@ -172,9 +179,52 @@ public class ChatDetailScreen extends Fragment {
         });
 
         mBtnScreenShot.setOnClickListener(view -> {
-            Bitmap bitmap = getScreenShot(view);
-            uploadImageFile(bitmap);
+//            Bitmap bitmap = getScreenShot(view);
+//            uploadImageFile(bitmap);
+
+            if (ContextCompat.checkSelfPermission(getContext(),Manifest.permission.CAMERA) != PermissionChecker.PERMISSION_GRANTED)
+            {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
+            }
+            else
+            {
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                someActivityResultLauncher.launch(cameraIntent);
+            }
         });
+    }
+
+    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // There are no request codes
+                        Intent data = result.getData();
+                        Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+                        uploadImageFile(bitmap);
+                    }
+                }
+            });
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == MY_CAMERA_PERMISSION_CODE)
+        {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(getContext(), "camera permission granted", Toast.LENGTH_LONG).show();
+                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+            }
+            else
+            {
+                Toast.makeText(getContext(), "camera permission denied", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
 
